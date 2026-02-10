@@ -1,4 +1,7 @@
 <?php
+
+use GlpiPlugin\Ticketmail\Ticket;
+
 /**
  * ---------------------------------------------------------------------
  *  ticketmail is a plugin to allows users to send ticket information by email
@@ -31,58 +34,54 @@ function plugin_ticketmail_install()
 {
     global $DB;
 
-    $migration = new Migration(100);
+    $currentVersion = '0.0.0';
 
-    //Fresh install
-    if (!$DB->tableExists('glpi_plugin_ticketmail_profiles')) {
-        $query = "CREATE TABLE `glpi_plugin_ticketmail_profiles` (
-                `id` int(11) NOT NULL default '0' COMMENT 'RELATION to glpi_profiles (id)',
-                `show_ticketmail_onglet` char(1) collate utf8_unicode_ci default NULL,
-                PRIMARY KEY  (`id`)
-          ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8mb4_unicode_ci;";
-        $DB->queryOrDie($query, $DB->error());
+    $current = Config::getConfigurationValues('plugin:ticketmail');
 
-        $migration->executeMigration();
-
-        include_once(PLUGIN_TICKETMAIL_DIR."/inc/profile.class.php");
-        PluginTicketmailProfile::createAdminAccess($_SESSION['glpiactiveprofile']['id']);
+    if (isset($current['version'])) {
+        $currentVersion = $current['version'];
     }
-    //Update
-    else {
-        // Since v0.84 remove "profiles_id" column and use "id"
-        if ($DB->fieldExists('glpi_plugin_ticketmail_profiles', 'profiles_id')) {
-            $drop_column_query = "ALTER TABLE glpi_plugin_ticketmail_profiles DROP COLUMN `id`;";
-            $rename_column_query = "ALTER TABLE glpi_plugin_ticketmail_profiles
-                                    CHANGE profiles_id id int(11) NOT NULL default '0'
-                                    COMMENT 'RELATION to glpi_profiles (id)';";
-            $DB->queryOrDie($drop_column_query, $DB->error());
-            $DB->queryOrDie($rename_column_query, $DB->error());
-            $add_primarykey_query = "ALTER TABLE glpi_plugin_ticketmail_profiles ADD PRIMARY KEY (id);";
-            $drop_old_index_query = "ALTER TABLE glpi_plugin_ticketmail_profiles DROP INDEX profiles_id;";
-            $DB->queryOrDie($add_primarykey_query, $DB->error());
-            $DB->queryOrDie($drop_old_index_query, $DB->error());
-        }
+
+    $migration = new Migration(PLUGIN_TICKETMAIL_VERSION);
+    $migration->addRight(Ticket::$rightname, Ticket::RIGHT_ALLOW, [Config::$rightname => UPDATE]);
+
+    if (version_compare($currentVersion, '4.0.0', '<')) {
+        $DB->dropTable('glpi_plugin_ticketmail_profiles', true);
     }
+
+    $migration->executeMigration();
+
+    $current['version'] = PLUGIN_TICKETMAIL_VERSION;
+    Config::setConfigurationValues('plugin:ticketmail', $current);
+
     return true;
 }
 
 function plugin_ticketmail_uninstall()
 {
-    global $DB;
 
-    $DB->query("DROP TABLE IF EXISTS `glpi_plugin_ticketmail_profiles`;");
+    ProfileRight::deleteProfileRights(Ticket::$rightname);
 
     return true;
 }
 
-function plugin_ticketmail_getPluginsDatabaseRelations()
+function plugin_ticketmail_item_action_targets(NotificationTargetTicket $target)
 {
-    $plugin = new Plugin();
-    if ($plugin->isActivated("ticketmail")) {
-        return [
-                "glpi_profiles" => ["glpi_plugin_ticketmail_profiles" => "id"]
-               ];
-    } else {
-        return [];
-    }
+    $target->addToRecipientsList($target->options);
+}
+
+function plugin_ticketmail_item_add_targets(NotificationTargetTicket $target)
+{
+    $target->addTarget(Notification::ITEM_USER, __('Send ticket as email'));
+}
+
+function plugin_ticketmail_get_events(NotificationTargetTicket $target)
+{
+    $target->events['plugin_ticketmail'] = __s('Send ticket as mail', 'ticketmail');
+}
+
+
+function plugin_ticketmail_get_datas(NotificationTargetTicket $target)
+{
+    $target->data['##ticket.ticket_mail_note##'] = $target->options['ticket_mail_note'];
 }

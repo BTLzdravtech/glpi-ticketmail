@@ -1,7 +1,4 @@
-> [!CAUTION]
-> This GLPI plugin is no longer maintained and is provided as-is without warranty.
-
 # Ticket Mail
 
-Ce plugin permet d'envoyer les informations de suivi et tâches d'un ticket à une personne par mail depuis un onglet affiché dans la page descriptive d'un ticket.
-Une fois le plugin cloné, renommer le dossier glpi-plugins-ticketmail en ticketmail
+This plugin allows you to send ticket tracking and task information to a person via email from a tab displayed on the ticket's description page.
+Once the plugin is cloned, rename the glpi-plugins-ticketmail folder to ticketmail.
