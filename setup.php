@@ -29,7 +29,6 @@
  */
 
 use Glpi\Plugin\Hooks;
-use GlpiPlugin\Ticketmail\NotificationTargetTicket;
 use GlpiPlugin\Ticketmail\Profile as TicketMailProfile;
 use GlpiPlugin\Ticketmail\Ticket as TicketMailTicket;
 

@@ -5,11 +5,8 @@ namespace GlpiPlugin\Ticketmail;
 use CommonDBTM;
 use CommonGLPI;
 use Glpi\Application\View\TemplateRenderer;
-use Glpi\DBAL\QueryUnion;
-use Html;
 use Session;
 use Ticket as GlpiTicket;
-use User;
 
 class Ticket extends CommonDBTM
 {
@@ -23,7 +20,7 @@ class Ticket extends CommonDBTM
 
     public static function getTypeName($nb = 0)
     {
-        return "Send ticket as mail";
+        return __("Send ticket as mail", "ticketmail");
     }
 
     public function getRights($interface = 'central')
@@ -38,6 +35,7 @@ class Ticket extends CommonDBTM
         if (
             $item instanceof GlpiTicket
             && $item->getField('id')
+            && Session::haveRight(self::$rightname, self::RIGHT_ALLOW)
         ) {
             return self::createTabEntry(__s('Ticket mail', 'ticketmail'));
         }

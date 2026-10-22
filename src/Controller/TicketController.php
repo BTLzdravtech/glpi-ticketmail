@@ -7,6 +7,7 @@ use Glpi\Http\RedirectResponse;
 use GlpiPlugin\Ticketmail\Ticket;
 use Html;
 use NotificationEvent;
+use NotificationMailing;
 use Session;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,25 +22,35 @@ final class TicketController extends AbstractController
         Session::checkRight(Ticket::$rightname, Ticket::RIGHT_ALLOW);
 
         $ticket = new GlpiTicket();
-        $ticket->getFromDB($_POST["ticket_id"]);
+        $ticket->check($request->request->getInt('ticket_id'), READ);
 
-        if (empty($_POST['users_id']) && empty($_POST['ticket_mail_custom_mail'])) {
+        $users_id = $request->request->getInt('users_id');
+        $email = trim($request->request->getString('ticket_mail_custom_mail'));
+
+        if ($users_id <= 0 && $email === '') {
             $message = sprintf(
                 __('Mandatory fields are not filled. Please correct: %s'),
-                __('Recipient')
+                __('Recipient', 'ticketmail')
             );
             Session::addMessageAfterRedirect(htmlescape($message), false, ERROR);
-            Html::back();
+
+            return new RedirectResponse(Html::getBackUrl());
+        }
+
+        if ($email !== '' && !NotificationMailing::isUserAddressValid($email)) {
+            Session::addMessageAfterRedirect(__s('Invalid email address'), false, ERROR);
+
+            return new RedirectResponse(Html::getBackUrl());
         }
 
         NotificationEvent::raiseEvent('plugin_ticketmail', $ticket, [
-            'users_id' => $_POST['users_id'],
-            'email' => empty($_POST['ticket_mail_custom_mail']) ? null : $_POST['ticket_mail_custom_mail'],
-            'ticket_mail_note' => $_POST['ticket_mail_note'],
+            'users_id' => $users_id > 0 ? $users_id : null,
+            'email' => $email === '' ? null : $email,
+            'ticket_mail_note' => $request->request->getString('ticket_mail_note'),
         ]);
 
         Session::addMessageAfterRedirect(
-            __s('Ticket has been sent!'),
+            __s('Ticket has been sent!', 'ticketmail'),
             true,
             INFO
         );

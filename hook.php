@@ -72,7 +72,7 @@ function plugin_ticketmail_item_action_targets(NotificationTargetTicket $target)
 
 function plugin_ticketmail_item_add_targets(NotificationTargetTicket $target)
 {
-    $target->addTarget(Notification::ITEM_USER, __('Send ticket as email'));
+    $target->addTarget(Notification::ITEM_USER, __('Send ticket as email', 'ticketmail'));
 }
 
 function plugin_ticketmail_get_events(NotificationTargetTicket $target)
@@ -83,5 +83,5 @@ function plugin_ticketmail_get_events(NotificationTargetTicket $target)
 
 function plugin_ticketmail_get_datas(NotificationTargetTicket $target)
 {
-    $target->data['##ticket.ticket_mail_note##'] = $target->options['ticket_mail_note'];
+    $target->data['##ticket.ticket_mail_note##'] = $target->options['ticket_mail_note'] ?? '';
 }
