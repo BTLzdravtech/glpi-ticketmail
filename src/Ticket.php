@@ -11,7 +11,7 @@ use Ticket as GlpiTicket;
 class Ticket extends CommonDBTM
 {
     public const RIGHT_ALLOW = 1024;
-    public static $rightname = 'plugin_ticketmail';
+    public static string $rightname = 'plugin_ticketmail';
 
     public static function getIcon(): string
     {

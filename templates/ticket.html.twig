@@ -5,12 +5,11 @@
           action="{{ form_path }}"
           method="post"
           data-track-changes="true">
-        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}" />
 {% endif %}
 
 <div class="row">
     {{ fields.smallTitle(__('Send ticket information by mail', 'ticketmail')) }}
-    {{ fields.hiddenField('ticket_id', item.fields['id'], '') }}
+    {{ fields.hiddenField('ticket_id', item.fields['id']) }}
     {{ fields.dropdownArrayField('ticket_mail_type', 'glpi', {
         'glpi': __('GLPI user', 'ticketmail'),
         'custom': __('Custom email')

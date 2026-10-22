@@ -32,9 +32,9 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Ticketmail\Profile as TicketMailProfile;
 use GlpiPlugin\Ticketmail\Ticket as TicketMailTicket;
 
-define('PLUGIN_TICKETMAIL_VERSION', '4.0.0');
-define('PLUGIN_TICKETMAIL_MIN_GLPI', '11.0.0');
-define('PLUGIN_TICKETMAIL_MAX_GLPI', '11.0.99');
+define('PLUGIN_TICKETMAIL_VERSION', '5.0.0');
+define('PLUGIN_TICKETMAIL_MIN_GLPI', '12.0.0');
+define('PLUGIN_TICKETMAIL_MAX_GLPI', '12.0.99');
 
 function plugin_init_ticketmail()
 {
